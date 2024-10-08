@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
+    private static AudioManager _instance;
+
     [SerializeField] private AudioClip _clickSound;
     [SerializeField] private AudioClip _collisionSound;
     [SerializeField] private AudioClip _basketSound;
@@ -11,9 +13,21 @@ public class AudioManager : MonoBehaviour
     private AudioSource _audioSource;
     private CustomHapticManager _customHapticManager;
 
+    private void Awake()
+    {
+        if (_instance == null)
+        {
+            _instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     private void Start()
     {
-        DontDestroyOnLoad(gameObject);
         _audioSource = GetComponent<AudioSource>();
         _customHapticManager = GetComponent<CustomHapticManager>();
     }
