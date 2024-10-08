@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameLevelController : MonoBehaviour
@@ -9,9 +8,13 @@ public class GameLevelController : MonoBehaviour
     [SerializeField] private GameObject _levelsPanel;
     [SerializeField] private GameObject[] _gamePanels;
     [SerializeField] private GameObject[] _gameElements;
+    private AudioManager _audioManager;
+    private int _currentLevelIndex;
+    private int _bestLevel;
 
     private void Start()
     {
+        _audioManager = FindObjectOfType<AudioManager>();
         foreach (var element in _gameElements)
         {
             element.SetActive(false);
@@ -22,15 +25,25 @@ public class GameLevelController : MonoBehaviour
         {
             item.SetActive(false);
         }
-        int BestLevel = PlayerPrefs.GetInt("HighestLevel", 1);
+
+        if (SceneManager.GetActiveScene().name == "BuildingsGame")
+            _bestLevel = PlayerPrefs.GetInt("HighestLevelBuilding", 1);
+        else _bestLevel = PlayerPrefs.GetInt("HighestLevelPlanes", 1);
+
         foreach (var button in _levels)
         {
             button.onClick.AddListener(() => StartGame(button));
-            if (BestLevel < int.Parse(button.name))
+
+            if (_bestLevel < int.Parse(button.name))
             {
                 button.interactable = false;
             }
         }
+    }
+
+    public void PlayClickSound()
+    {
+        _audioManager.PlayClickSound();
     }
 
     private void StartGame(Button button)
@@ -40,6 +53,48 @@ public class GameLevelController : MonoBehaviour
             element.SetActive(true);
         }
         _levelsPanel.SetActive(false);
-        _gamePanels[int.Parse(button.name)-1].SetActive(true);
+        _currentLevelIndex = int.Parse(button.name) - 1;
+        _gamePanels[_currentLevelIndex].SetActive(true);
+
+        if (SceneManager.GetActiveScene().name == "BuildingsGame")
+            PlayerPrefs.SetInt("CurrentLevelIndexBuilding", _currentLevelIndex);
+        else PlayerPrefs.SetInt("CurrentLevelIndexPlanes", _currentLevelIndex);
+    }
+
+    public void CloseCurrentLevel()
+    {
+        _gamePanels[_currentLevelIndex].SetActive(false);
+    }
+
+    public void ReloadLevel()
+    {
+        _gamePanels[_currentLevelIndex].SetActive(true);
+    }
+
+    public void ShowNextLevel()
+    {
+        _currentLevelIndex++;
+
+        if (SceneManager.GetActiveScene().name == "BuildingsGame")
+        {
+            PlayerPrefs.SetInt("CurrentLevelIndexBuilding", _currentLevelIndex);
+            _bestLevel = PlayerPrefs.GetInt("HighestLevelBuilding", 1);
+        }
+
+        else
+        {
+            PlayerPrefs.SetInt("CurrentLevelIndexPlanes", _currentLevelIndex);
+            _bestLevel = PlayerPrefs.GetInt("HighestLevelPlanes", 1);
+        }
+
+        
+        if (_currentLevelIndex > _bestLevel)
+        {
+            _bestLevel = _currentLevelIndex;
+            if (SceneManager.GetActiveScene().name == "BuildingsGame")
+                PlayerPrefs.SetInt("HighestLevelBuilding", _bestLevel + 1);
+            else PlayerPrefs.SetInt("HighestLevelPlanes", _bestLevel + 1);
+        }
+        _gamePanels[_currentLevelIndex].SetActive(true);
     }
 }
