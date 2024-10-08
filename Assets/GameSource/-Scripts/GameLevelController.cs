@@ -8,6 +8,7 @@ public class GameLevelController : MonoBehaviour
     [SerializeField] private GameObject _levelsPanel;
     [SerializeField] private GameObject[] _gamePanels;
     [SerializeField] private GameObject[] _gameElements;
+    [SerializeField] private GameObject _sectionCompleted;
     private AudioManager _audioManager;
     private int _currentLevelIndex;
     private int _bestLevel;
@@ -74,6 +75,11 @@ public class GameLevelController : MonoBehaviour
     public void ShowNextLevel()
     {
         _currentLevelIndex++;
+        if (_currentLevelIndex >= 9)
+        {
+            _sectionCompleted.SetActive(true);
+            return;
+        }
 
         if (SceneManager.GetActiveScene().name == "BuildingsGame")
         {
@@ -88,12 +94,12 @@ public class GameLevelController : MonoBehaviour
         }
 
         
-        if (_currentLevelIndex > _bestLevel)
+        if (_currentLevelIndex >= _bestLevel)
         {
-            _bestLevel = _currentLevelIndex;
+            _bestLevel++;
             if (SceneManager.GetActiveScene().name == "BuildingsGame")
-                PlayerPrefs.SetInt("HighestLevelBuilding", _bestLevel + 1);
-            else PlayerPrefs.SetInt("HighestLevelPlanes", _bestLevel + 1);
+                PlayerPrefs.SetInt("HighestLevelBuilding", _bestLevel);
+            else PlayerPrefs.SetInt("HighestLevelPlanes", _bestLevel);
         }
         _gamePanels[_currentLevelIndex].SetActive(true);
     }
